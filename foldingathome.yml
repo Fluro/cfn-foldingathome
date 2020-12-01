@@ -3,56 +3,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Run Folding@home on spot instances to help find cure for COVID-19.
 
-Mappings:
-  # Ubuntu 18.04 LTS AMI IDs as of 2020-06-18 from https://cloud-images.ubuntu.com/locator/ec2/
-  Ubuntu1804:
-    af-south-1:
-      ImageId: 'ami-079652134905bcbad'
-    ap-east-1:
-      ImageId: 'ami-c42464b5'
-    ap-northeast-1:
-      ImageId: 'ami-0cfa3caed4b487e77'
-    ap-northeast-2:
-      ImageId: 'ami-0d777f54156eae7d9'
-    ap-northeast-3:
-      ImageId: 'ami-056ee91a6ed694f5d'
-    ap-south-1:
-      ImageId: 'ami-02d55cb47e83a99a0'
-    ap-southeast-1:
-      ImageId: 'ami-063e3af9d2cc7fe94'
-    ap-southeast-2:
-      ImageId: 'ami-0bc49f9283d686bab'
-    ca-central-1:
-      ImageId: 'ami-065ba2b6b298ed80f'
-    cn-north-1:
-      ImageId: 'ami-0071f6f4df15863cc'
-    cn-northwest-1:
-      ImageId: 'ami-0a22b8776bb32836b'
-    eu-central-1:
-      ImageId: 'ami-0d359437d1756caa8'
-    eu-north-1:
-      ImageId: 'ami-0f920d75f0ce2c4bb'
-    eu-south-1:
-      ImageId: 'ami-08bb6fa4a2d8676d4'
-    eu-west-1:
-      ImageId: 'ami-089cc16f7f08c4457'
-    eu-west-2:
-      ImageId: 'ami-00f6a0c18edb19300'
-    eu-west-3:
-      ImageId: 'ami-0e11cbb34015ff725'
-    me-south-1:
-      ImageId: 'ami-0ca656ad4cf917e1f'
-    sa-east-1:
-      ImageId: 'ami-0faf2c48fc9c8f966'
-    us-east-1:
-      ImageId: 'ami-0ac80df6eff0e70b5'
-    us-east-2:
-      ImageId: 'ami-0a63f96e85105c6d3'
-    us-west-1:
-      ImageId: 'ami-0d705db840ec5f0c5'
-    us-west-2:
-      ImageId: 'ami-053bc2e89490c5ab7'
-
 Parameters: 
   Anonymous:
     Description: Folding@home fold anonymously (default true for anonymous)
@@ -86,6 +36,11 @@ Parameters:
   VpcId:
     Description: VPC for the stack (for example the default VPC 172.31.0.0/16)
     Type: AWS::EC2::VPC::Id
+  ImageId:
+    Description: SSM parameter store location to retrieve the latest Ubuntu 18.04 image
+    Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/canonical/ubuntu/server/18.04/stable/current/amd64/hvm/ebs-gp2/ami-id'
+
   SSHLocation:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$"
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/0-28
@@ -125,7 +80,7 @@ Resources:
               VolumeType: 'gp2'
         IamInstanceProfile:
           Name: !Ref InstanceProfile
-        ImageId: !FindInMap [ Ubuntu1804, !Ref 'AWS::Region', ImageId ]
+        ImageId: !Ref ImageId
         InstanceType: 'g4dn.xlarge'
         InstanceMarketOptions:
           MarketType: 'spot'
